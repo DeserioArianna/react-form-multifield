@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -15,11 +15,22 @@ function App() {
   const generateId = () => Date.now();
 
   const handleChange = (event) => {
-    const {name, value, type, checked} = event.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value, type, checked } = event.target;
+    if (type === "checkbox" && name === "tags") {
+      setFormData(prevState => {
+        const updatedTags = checked ? [...prevState.tags, value] : prevState.tags.filter((curTag) => curTag !== value);
+
+        return {
+          ...prevState,
+          tags: updatedTags,
+        };
+      });
+    } else {
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    };
   };
 
   const handleSubmit = (event) => {
@@ -36,7 +47,8 @@ function App() {
         postImage: "",
         postContent: "",
         postCategory: "news",
-        postStatus: false
+        postStatus: false,
+        tags: [],
       });
     };
   };
@@ -44,7 +56,14 @@ function App() {
   const handleDelete = (id) => {
     const newPosts = posts.filter((curPost) => curPost.id !== id);
     setPosts(newPosts);
-  }
+  };
+
+  useEffect(() => {
+    if (formData.postStatus) {
+      alert("L'articolo é pronto per essere pubblicato")
+    }
+  }, [formData.postStatus]);
+
   return (
     <>
       <header className="bg-info text-center mb-3">
@@ -85,7 +104,7 @@ function App() {
           <div className='mb-3'>
             <label htmlFor="postContent" className='me-4'>Contenuto:</label>
             <input
-              type="text-area"
+              text="text"
               id="postContent"
               name="postContent"
               value={formData.postContent}
@@ -94,14 +113,14 @@ function App() {
 
           <div className='mb-3'>
             <label htmlFor="postCategory" className='me-4'>Categoria:</label>
-            <select 
-            id="postCategory"
-            name="postCategory"
-            value={formData.postCategory}
-            onChange={handleChange}>
-            <option value="news">News</option>
-            <option value="sports">Sports</option>
-            <option value="poems">Poems</option>
+            <select
+              id="postCategory"
+              name="postCategory"
+              value={formData.postCategory}
+              onChange={handleChange}>
+              <option value="news">News</option>
+              <option value="sports">Sports</option>
+              <option value="poems">Poems</option>
             </select>
           </div>
 
@@ -115,6 +134,36 @@ function App() {
               onChange={handleChange} />
           </div>
 
+          <div className="mb-3">
+            <label className='me-4'>Tags:</label>
+            <div>
+              <label>
+                <input
+                  type="checkbox"
+                  name="tags"
+                  value="tech"
+                  checked={formData.tags.includes("tech")}
+                  onChange={handleChange} /> Tech
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  name="tags"
+                  value="education"
+                  checked={formData.tags.includes("education")}
+                  onChange={handleChange} /> Education
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  name="tags"
+                  value="health"
+                  checked={formData.tags.includes("health")}
+                  onChange={handleChange} /> Health
+              </label>
+            </div>
+          </div>
+
           <button type='submit' className='btn btn-success'>Aggiungi Post</button>
         </form>
         <div className="row mt-5">
@@ -126,10 +175,11 @@ function App() {
                   <div className='card-body'>
                     <h4 className='card-title'>{curPost.postName}</h4>
                     <p className='card-text'>{curPost.postDescription}</p>
-                    {curPost.postImage && <img src={curPost.postImage} alt={curPost.postName}/>}
-                    <p>{curPost.postContent}</p>
-                    <p><strong>Categoria:</strong></p>
+                    {curPost.postImage && <img src={curPost.postImage} alt={curPost.postName} />}
+                    <p><strong>Contenuto:</strong> {curPost.postContent}</p>
+                    <p><strong>Categoria:</strong> {curPost.postCategory}</p>
                     <p><strong>Pubblicato:</strong></p>
+                    <p><strong>Tags:</strong> {curPost.tags.join(", ")}</p>
                     <button onClick={() => handleDelete(curPost.id)}>🗑️</button>
                   </div>
                 </div>
